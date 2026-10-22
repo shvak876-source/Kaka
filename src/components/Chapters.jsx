@@ -5,11 +5,11 @@ import { Beat, Parallax, Scene, useSceneProgress, Words } from './Scene'
 
 const EASE = [0.22, 1, 0.36, 1]
 
-function ChapterMark({ label, date }) {
+function ChapterMark({ date }) {
+  if (!date) return null
   return (
     <div className="chapter-mark">
-      <span className="chapter-label">{label}</span>
-      {date ? <span className="chapter-date">{date}</span> : null}
+      <span className="chapter-date">{date}</span>
     </div>
   )
 }
@@ -37,15 +37,30 @@ export function Opening() {
           </motion.p>
         ))}
       </Beat>
-      <Beat out={[0, sch.out[1] * 0.6]} className="layer layer-arrow" lift={0} blur={0}>
-        <ScrollArrow label={scrollHint} delay={(0.9 + lines.length * 1.5) * d} reduce={reduce} />
+      <Beat out={[sch.out[1] * 0.8, sch.out[1] * 1.1]} className="layer layer-arrow" lift={0} blur={0}>
+        <ScrollArrow label={scrollHint} delay={(0.9 + lines.length * 1.5) * d} reduce={reduce} fillEnd={sch.out[1] * 0.8} />
       </Beat>
     </Scene>
   )
 }
 
-/** A hand-drawn, glowing arrow that sweeps from the title down to the bottom of the screen. */
-function ScrollArrow({ label, delay, reduce }) {
+const ARROW_BODY = 'M460 290 C 300 300, 150 520, 125 850 C 112 1020, 128 1150, 152 1240'
+const ARROW_HEAD = 'M127 1188 L152 1242 L168 1184'
+const ARROW_TAIL = 'M154 1250 C 190 1350, 240 1440, 300 1530'
+
+/**
+ * A hand-drawn arrow from the title to the bottom of the screen. A faint outline draws itself
+ * on load; as she scrolls, light pours through it — the arrow is the scroll indicator.
+ */
+function ScrollArrow({ label, delay, reduce, fillEnd }) {
+  const progress = useSceneProgress()
+  const fill = useTransform(progress, [0, fillEnd], [0, 1])
+  const body = useTransform(fill, [0, 0.82], [0, 1])
+  const head = useTransform(fill, [0.82, 0.92], [0, 1])
+  const tail = useTransform(fill, [0.92, 1], [0, 1])
+  const lit = useTransform(fill, [0.85, 1], [0, 1])
+  const hide = (v) => (v < 0.001 ? 0 : 1)
+
   const draw = (extra, duration) => ({
     initial: { pathLength: reduce ? 1 : 0, opacity: 0 },
     animate: { pathLength: 1, opacity: 1 },
@@ -54,56 +69,45 @@ function ScrollArrow({ label, delay, reduce }) {
       opacity: { delay: delay + extra, duration: 0.3 },
     },
   })
+  const line = { fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }
   return (
     <svg className="scroll-arrow-svg" viewBox="0 0 920 1530" preserveAspectRatio="xMidYMid meet" role="img" aria-label={label}>
       <defs>
         <linearGradient id="arrowStroke" gradientUnits="userSpaceOnUse" x1="0" y1="290" x2="0" y2="1245">
-          <stop offset="0" stopColor="#f3c6dc" stopOpacity="0.85" />
-          <stop offset="1" stopColor="#ffd9e8" stopOpacity="1" />
+          <stop offset="0" stopColor="#ffd0e3" />
+          <stop offset="1" stopColor="#fff0f6" />
         </linearGradient>
         <linearGradient id="arrowTail" gradientUnits="userSpaceOnUse" x1="0" y1="1250" x2="0" y2="1530">
-          <stop offset="0" stopColor="#f3c6dc" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#f3c6dc" stopOpacity="0" />
+          <stop offset="0" stopColor="#ffd0e3" stopOpacity="0.8" />
+          <stop offset="1" stopColor="#ffd0e3" stopOpacity="0" />
         </linearGradient>
         <radialGradient id="arrowGlow">
-          <stop offset="0" stopColor="#ffb3cf" stopOpacity="0.55" />
+          <stop offset="0" stopColor="#ffb3cf" stopOpacity="0.7" />
           <stop offset="1" stopColor="#ffb3cf" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <motion.path
-        d="M460 290 C 300 300, 150 520, 125 850 C 112 1020, 128 1150, 152 1240"
-        fill="none"
-        stroke="url(#arrowStroke)"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-        {...draw(0, 2.2)}
-      />
-      <motion.path
-        d="M127 1188 L152 1242 L168 1184"
-        fill="none"
-        stroke="#ffe3ee"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        {...draw(2.1, 0.45)}
-      />
-      <motion.path
-        d="M154 1250 C 190 1350, 240 1440, 300 1530"
-        fill="none"
-        stroke="url(#arrowTail)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        {...draw(2.4, 1.2)}
-      />
+
+      {/* the empty outline */}
+      <g className="arrow-track">
+        <motion.path d={ARROW_BODY} stroke="#f3c6dc" strokeWidth="2.4" {...line} {...draw(0, 2.2)} />
+        <motion.path d={ARROW_HEAD} stroke="#f3c6dc" strokeWidth="2.6" {...line} {...draw(2.1, 0.45)} />
+        <motion.path d={ARROW_TAIL} stroke="url(#arrowTail)" strokeWidth="2" {...line} {...draw(2.4, 1.2)} />
+      </g>
+
+      {/* the light that fills it with the scroll */}
+      <g className="arrow-fill">
+        <motion.path d={ARROW_BODY} stroke="url(#arrowStroke)" strokeWidth="4" {...line} style={{ pathLength: body, opacity: useTransform(body, hide) }} />
+        <motion.path d={ARROW_HEAD} stroke="#fff0f6" strokeWidth="4.4" {...line} style={{ pathLength: head, opacity: useTransform(head, hide) }} />
+        <motion.path d={ARROW_TAIL} stroke="url(#arrowTail)" strokeWidth="3" {...line} style={{ pathLength: tail, opacity: useTransform(tail, hide) }} />
+      </g>
+
       <motion.circle
         className={reduce ? undefined : 'arrow-glow'}
         cx="150"
         cy="1236"
-        r="48"
+        r="56"
         fill="url(#arrowGlow)"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: delay + 2.2, duration: 0.8 }}
+        style={{ opacity: useTransform(lit, (v) => 0.35 + v * 0.65) }}
       />
     </svg>
   )
@@ -118,7 +122,7 @@ export function Meeting() {
       <Parallax className="deco deco-ring" amount={90} />
       <Beat out={sch.out} className="layer" lift={30} blur={6}>
         <Beat range={sch.title} className="title-block">
-          <ChapterMark label={c.label} date={c.date} />
+          <ChapterMark date={c.date} />
           <h2 className="chapter-title glow-text">{c.title}</h2>
         </Beat>
         <div className="paragraphs">
@@ -147,7 +151,7 @@ export function Conversations() {
 
       <Beat out={sch.introOut} className="layer" blur={6}>
         <Beat range={sch.title} className="title-block">
-          <ChapterMark label={c.label} date={c.date} />
+          <ChapterMark date={c.date} />
           <h2 className="chapter-title glow-text">{c.title}</h2>
         </Beat>
         <div className="paragraphs">
@@ -216,7 +220,6 @@ export function Moments() {
   return (
     <Scene id="moments" units={sch.U}>
       <Beat range={sch.titleIn} out={sch.titleOut} className="layer">
-        <ChapterMark label={c.label} />
         <h2 className="chapter-title chapter-title-long glow-text">{c.title}</h2>
       </Beat>
 
