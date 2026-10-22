@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 
 /**
  * Keeps track of where every scene sits in the document, so global effects
- * (timeline, background mood, particles) can be driven by the page scroll.
+ * (scroll arrow, background mood, particles) can be driven by the page scroll.
  * Each entry: S = scrollY where the scene's sticky stage locks, E = where it releases.
  */
 const RegisterCtx = createContext(null)

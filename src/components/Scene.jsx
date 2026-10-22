@@ -87,15 +87,3 @@ function Word({ range, children }) {
     </motion.span>
   )
 }
-
-/** Moves children at a different rate than the text (subtle parallax). */
-export function Parallax({ amount = 60, className, children }) {
-  const progress = useSceneProgress()
-  const reduce = useReducedMotion()
-  const y = useTransform(progress, [0, 1], reduce ? [0, 0] : [amount, -amount])
-  return (
-    <motion.div className={className} style={{ y }}>
-      {children}
-    </motion.div>
-  )
-}

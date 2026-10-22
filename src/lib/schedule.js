@@ -52,7 +52,7 @@ function meetingSchedule() {
 }
 
 function conversationsSchedule() {
-  const { intro, chat, screenshots, closing } = story.conversations
+  const { intro, closing } = story.conversations
   const s = sequencer().wait(0.15)
   const title = s.take(0.45)
   s.wait(0.2)
@@ -64,22 +64,6 @@ function conversationsSchedule() {
   s.wait(0.4)
   const introOut = s.take(0.35)
   s.wait(0.15)
-  const bubbles = chat.map(() => {
-    const r = s.take(0.32)
-    s.wait(0.12)
-    return r
-  })
-  s.wait(0.5)
-  const bubblesOut = s.take(0.35)
-  let shots = null
-  if (screenshots.length) {
-    s.wait(0.15)
-    const inR = s.take(0.45)
-    s.wait(0.7)
-    const outR = s.take(0.35)
-    shots = { in: inR, out: outR }
-  }
-  s.wait(0.15)
   const closingIn = s.take(closing.wordByWord ? 0.8 : 0.45)
   s.wait(0.7)
   const closingOut = s.take(0.4)
@@ -90,9 +74,6 @@ function conversationsSchedule() {
     title: n(title),
     introLines: introLines.map(n),
     introOut: n(introOut),
-    bubbles: bubbles.map(n),
-    bubblesOut: n(bubblesOut),
-    shots: shots && { in: n(shots.in), out: n(shots.out) },
     closingIn: n(closingIn),
     closingOut: n(closingOut),
   }
@@ -194,15 +175,5 @@ export const schedule = {
   finale: finaleSchedule(),
 }
 
-/** Points of light on the timeline: [sceneId, fraction of that scene, major?] */
-export const timelineStops = [
-  ['meeting', schedule.meeting.title[0], true],
-  ['conversations', schedule.conversations.title[0], true],
-  ['moments', schedule.moments.titleIn[0], true],
-  ...schedule.moments.moments.map((m) => ['moments', m.in[0], false]),
-  ['changed', schedule.changed.lines[0]?.in[0] ?? 0.05, true],
-  ['whatNow', schedule.whatNow.lines[0]?.in[0] ?? 0.05, true],
-]
-
-/** Where the timeline's fill reaches 100% (the glowing heart). */
-export const timelineEnd = ['finale', schedule.finale.questionIn[0]]
+/** Where the scroll arrow is completely filled: the moment the invitation appears. */
+export const arrowEnd = ['finale', schedule.finale.questionIn[0]]

@@ -3,7 +3,7 @@ import { LayoutProvider } from './lib/layout'
 import { useMood } from './lib/mood'
 import { Background } from './components/Background'
 import { Particles } from './components/Particles'
-import { Timeline } from './components/Timeline'
+import { ScrollArrow } from './components/ScrollArrow'
 import { Conversations, Meeting, Moments, Opening, SomethingChanged, WhatNow } from './components/Chapters'
 import { Finale } from './components/Finale'
 
@@ -13,7 +13,7 @@ function Experience() {
     <>
       <Background mood={mood} />
       <Particles scrollY={mood.scrollY} intensity={mood.finale} />
-      <Timeline mood={mood} />
+      <ScrollArrow scrollY={mood.scrollY} />
       <main className="story">
         <Opening />
         <Meeting />
