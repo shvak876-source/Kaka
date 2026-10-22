@@ -202,18 +202,15 @@ body {
   pointer-events: none;
 }
 
+.scroll-arrow-fade,
 .scroll-arrow svg {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow: visible;
 }
 
-.arrow-track {
-  opacity: 0.32;
-}
-
-.arrow-fill {
-  filter: drop-shadow(0 0 6px rgba(255, 170, 205, 0.85)) drop-shadow(0 0 16px rgba(255, 150, 195, 0.45));
+.arrow-line {
+  filter: drop-shadow(0 0 5px rgba(255, 170, 205, 0.85)) drop-shadow(0 0 14px rgba(255, 150, 195, 0.4));
 }
 
 .arrow-glow {

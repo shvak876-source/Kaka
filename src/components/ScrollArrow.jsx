@@ -1,90 +1,150 @@
-import { motion, useReducedMotion, useSpring, useTransform } from 'framer-motion'
+import { useLayoutEffect, useMemo, useRef } from 'react'
+import { motion, useMotionValueEvent, useReducedMotion } from 'framer-motion'
 import { story } from '../data/story'
 import { ramp, sceneY, useMetrics } from '../lib/layout'
 import { arrowEnd } from '../lib/schedule'
 
-const BODY = 'M460 290 C 280 300, 100 520, 80 850 C 68 1020, 82 1150, 104 1240'
-const HEAD = 'M79 1188 L104 1242 L120 1184'
-const TAIL = 'M106 1250 C 142 1350, 192 1440, 252 1530'
+/** Where the arrowhead sits on screen, as a fraction of the screen height. */
+const TIP = 0.8
+/** How tall each half-circle is compared to how wide it is (1 = a true half-circle). */
+const ROUNDNESS = 1.1
+const SAMPLES_PER_SWING = 140
 
 /**
- * The page's scroll indicator: a hand-drawn arrow that stays on screen for the whole story.
- * A faint outline draws itself on load; as she scrolls, light pours through it, and the
- * arrowhead lights up when she reaches the invitation.
+ * Lays a snake of half-ellipses down the whole page, swinging left and right through the
+ * middle of the screen. Returns the polyline plus, for every point, its y and its distance
+ * along the line, so the scroll position can be turned into "how far the arrow has travelled".
+ */
+function buildPath(width, vh, start, end) {
+  const cx = width / 2
+  const rx = Math.min(width * 0.38, vh * 0.3)
+  const count = Math.max(1, Math.round((end - start) / (rx * ROUNDNESS * 2)))
+  const ry = (end - start) / count / 2
+  const xs = []
+  const ys = []
+  const lens = []
+  let total = 0
+  for (let k = 0; k < count; k++) {
+    const side = k % 2 === 0 ? -1 : 1
+    const top = start + k * ry * 2
+    for (let i = k === 0 ? 0 : 1; i <= SAMPLES_PER_SWING; i++) {
+      const t = (i / SAMPLES_PER_SWING) * Math.PI
+      const x = cx + side * rx * Math.sin(t)
+      const y = top + ry * (1 - Math.cos(t))
+      if (xs.length) total += Math.hypot(x - xs[xs.length - 1], y - ys[ys.length - 1])
+      xs.push(x)
+      ys.push(y)
+      lens.push(total)
+    }
+  }
+  let d = `M${xs[0].toFixed(1)} ${ys[0].toFixed(1)}`
+  for (let i = 1; i < xs.length; i++) d += `L${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`
+  return { d, xs, ys, lens, total }
+}
+
+/** The point the arrow has reached once its tip is at height `y`, and the way it is heading. */
+function pointAt(p, y) {
+  const { xs, ys, lens } = p
+  const last = ys.length - 1
+  if (y <= ys[0]) return { len: 0, x: xs[0], y: ys[0], angle: Math.PI / 2 }
+  let lo = 0
+  let hi = last
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1
+    if (ys[mid] < y) lo = mid
+    else hi = mid
+  }
+  const f = ys[hi] === ys[lo] ? 0 : Math.min(1, (y - ys[lo]) / (ys[hi] - ys[lo]))
+  const angle = Math.atan2(ys[hi] - ys[lo], xs[hi] - xs[lo])
+  return {
+    len: lens[lo] + (lens[hi] - lens[lo]) * f,
+    x: xs[lo] + (xs[hi] - xs[lo]) * f,
+    y: ys[lo] + (ys[hi] - ys[lo]) * f,
+    angle,
+  }
+}
+
+/**
+ * The page's scroll indicator: a glowing arrow that travels down the page in half-circles
+ * as she scrolls, drawing its path behind it, and bows out when the invitation appears.
  */
 export function ScrollArrow({ scrollY }) {
-  const { metricsRef } = useMetrics()
+  const { metrics } = useMetrics()
   const reduce = useReducedMotion()
   const delay = (0.9 + story.opening.lines.length * 1.5) * (reduce ? 0.25 : 1)
+  const world = useRef(null)
+  const line = useRef(null)
+  const head = useRef(null)
+  const fade = useRef(null)
 
-  const raw = useTransform(scrollY, (y) => {
-    const end = sceneY(metricsRef.current, ...arrowEnd)
-    return Number.isFinite(end) && end > 0 ? ramp(y, 0, end) : 0
-  })
-  const smooth = useSpring(raw, { stiffness: 220, damping: 38, mass: 0.35, restDelta: 0.0002 })
-  const fill = reduce ? raw : smooth
-  const body = useTransform(fill, [0, 0.9], [0, 1])
-  const head = useTransform(fill, [0.9, 0.96], [0, 1])
-  const tail = useTransform(fill, [0.96, 1], [0, 1])
-  const lit = useTransform(fill, [0.9, 1], [0, 1])
-  const hide = (v) => (v < 0.001 ? 0 : 1)
+  const { vh } = metrics
+  const width = typeof window !== 'undefined' ? window.innerWidth : 400
+  const finishY = sceneY(metrics, ...arrowEnd)
+  const ready = Number.isFinite(finishY)
 
-  const draw = (extra, duration) => ({
-    initial: { pathLength: reduce ? 1 : 0, opacity: 0 },
-    animate: { pathLength: 1, opacity: 1 },
-    transition: {
-      pathLength: { delay: delay + extra, duration: reduce ? 0 : duration, ease: [0.65, 0, 0.35, 1] },
-      opacity: { delay: delay + extra, duration: 0.3 },
-    },
-  })
-  const line = { fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }
+  const path = useMemo(
+    () => (ready ? buildPath(width, vh, vh * TIP, finishY + vh * TIP) : null),
+    [ready, width, vh, finishY]
+  )
+
+  const update = (sy) => {
+    if (!path || !world.current) return
+    const p = pointAt(path, sy + vh * TIP)
+    world.current.setAttribute('transform', `translate(0 ${-sy})`)
+    line.current.setAttribute('stroke-dasharray', `${p.len} ${path.total + vh}`)
+    head.current.setAttribute('transform', `translate(${p.x} ${p.y - sy}) rotate(${(p.angle * 180) / Math.PI - 90})`)
+    fade.current.style.opacity = String(1 - ramp(sy, finishY - vh * 0.6, finishY))
+  }
+
+  useMotionValueEvent(scrollY, 'change', update)
+  useLayoutEffect(() => update(scrollY.get()))
+
+  if (!path) return null
 
   return (
-    <div className="scroll-arrow" aria-hidden="true">
-      <svg viewBox="0 0 920 1530" preserveAspectRatio="xMidYMid meet">
-        <defs>
-          <linearGradient id="arrowStroke" gradientUnits="userSpaceOnUse" x1="0" y1="290" x2="0" y2="1245">
-            <stop offset="0" stopColor="#ffd0e3" />
-            <stop offset="1" stopColor="#fff0f6" />
-          </linearGradient>
-          <linearGradient id="arrowTail" gradientUnits="userSpaceOnUse" x1="0" y1="1250" x2="0" y2="1530">
-            <stop offset="0" stopColor="#ffd0e3" stopOpacity="0.8" />
-            <stop offset="1" stopColor="#ffd0e3" stopOpacity="0" />
-          </linearGradient>
-          <radialGradient id="arrowGlow">
-            <stop offset="0" stopColor="#ffb3cf" stopOpacity="0.7" />
-            <stop offset="1" stopColor="#ffb3cf" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        {/* the empty outline */}
-        <g className="arrow-track">
-          <motion.path d={BODY} stroke="#f3c6dc" strokeWidth="2.4" {...line} {...draw(0, 2.2)} />
-          <motion.path d={HEAD} stroke="#f3c6dc" strokeWidth="2.6" {...line} {...draw(2.1, 0.45)} />
-          <motion.path d={TAIL} stroke="url(#arrowTail)" strokeWidth="2" {...line} {...draw(2.4, 1.2)} />
-        </g>
-
-        {/* the light that fills it with the scroll */}
-        <g className="arrow-fill">
-          <motion.path d={BODY} stroke="url(#arrowStroke)" strokeWidth="4" {...line} style={{ pathLength: body, opacity: useTransform(body, hide) }} />
-          <motion.path d={HEAD} stroke="#fff0f6" strokeWidth="4.4" {...line} style={{ pathLength: head, opacity: useTransform(head, hide) }} />
-          <motion.path d={TAIL} stroke="url(#arrowTail)" strokeWidth="3" {...line} style={{ pathLength: tail, opacity: useTransform(tail, hide) }} />
-        </g>
-
-        {/* the glow at the tip brightens as the arrow fills */}
-        <motion.g style={{ opacity: useTransform(lit, (v) => 0.45 + v * 0.55) }}>
-          <motion.circle
-            className={reduce ? undefined : 'arrow-glow'}
-            cx="102"
-            cy="1236"
-            r="56"
-            fill="url(#arrowGlow)"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: delay + 2.2, duration: 0.8 }}
-          />
-        </motion.g>
-      </svg>
-    </div>
+    <motion.div
+      className="scroll-arrow"
+      aria-hidden="true"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay, duration: 1.4 }}
+    >
+      <div ref={fade} className="scroll-arrow-fade">
+        <svg width={width} height={vh} viewBox={`0 0 ${width} ${vh}`}>
+          <defs>
+            {/* the trail fades away towards the top of the screen */}
+            <linearGradient id="trailFade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#fff" stopOpacity="0" />
+              <stop offset={TIP * 0.55} stopColor="#fff" stopOpacity="0.55" />
+              <stop offset={TIP} stopColor="#fff" stopOpacity="1" />
+            </linearGradient>
+            <mask id="trailMask" maskUnits="userSpaceOnUse" x="0" y="0" width={width} height={vh}>
+              <rect width={width} height={vh} fill="url(#trailFade)" />
+            </mask>
+            <radialGradient id="arrowGlow">
+              <stop offset="0" stopColor="#ffb3cf" stopOpacity="0.75" />
+              <stop offset="1" stopColor="#ffb3cf" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <g mask="url(#trailMask)" className="arrow-line">
+            <g ref={world}>
+              <path ref={line} d={path.d} fill="none" stroke="#ffd6e7" strokeWidth="2.6" strokeLinecap="round" strokeDasharray={`0 ${path.total + vh}`} />
+            </g>
+          </g>
+          <g ref={head}>
+            <circle className={reduce ? undefined : 'arrow-glow'} r="26" fill="url(#arrowGlow)" />
+            <path
+              className="arrow-line"
+              d="M-10 -13 L0 0 L10 -13"
+              fill="none"
+              stroke="#fff0f6"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+        </svg>
+      </div>
+    </motion.div>
   )
 }
