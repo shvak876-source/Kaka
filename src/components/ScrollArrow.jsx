@@ -17,7 +17,7 @@ const SAMPLES_PER_SWING = 140
  */
 function buildPath(width, vh, start, end) {
   const cx = width / 2
-  const rx = Math.min(width * 0.38, vh * 0.3)
+  const rx = Math.min(width * 0.46, vh * 0.42)
   const count = Math.max(1, Math.round((end - start) / (rx * ROUNDNESS * 2)))
   const ry = (end - start) / count / 2
   const xs = []
@@ -128,17 +128,17 @@ export function ScrollArrow({ scrollY }) {
           </defs>
           <g mask="url(#trailMask)" className="arrow-line">
             <g ref={world}>
-              <path ref={line} d={path.d} fill="none" stroke="#ffd6e7" strokeWidth="2.6" strokeLinecap="round" strokeDasharray={`0 ${path.total + vh}`} />
+              <path ref={line} d={path.d} fill="none" stroke="#ffd6e7" strokeWidth="1.5" strokeLinecap="round" strokeDasharray={`0 ${path.total + vh}`} />
             </g>
           </g>
           <g ref={head}>
-            <circle className={reduce ? undefined : 'arrow-glow'} r="26" fill="url(#arrowGlow)" />
+            <circle className={reduce ? undefined : 'arrow-glow'} r="18" fill="url(#arrowGlow)" />
             <path
               className="arrow-line"
-              d="M-10 -13 L0 0 L10 -13"
+              d="M-7 -9 L0 0 L7 -9"
               fill="none"
               stroke="#fff0f6"
-              strokeWidth="3"
+              strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
