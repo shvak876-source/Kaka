@@ -37,18 +37,75 @@ export function Opening() {
           </motion.p>
         ))}
       </Beat>
-      <Beat out={[0, sch.out[1] * 0.5]} className="layer layer-bottom" lift={10} blur={0}>
-        <motion.div
-          className="scroll-hint"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: (0.9 + lines.length * 1.5) * d, duration: 1.2 }}
-        >
-          <span>{scrollHint}</span>
-          <span className="scroll-arrow">↓</span>
-        </motion.div>
+      <Beat out={[0, sch.out[1] * 0.6]} className="layer layer-arrow" lift={0} blur={0}>
+        <ScrollArrow label={scrollHint} delay={(0.9 + lines.length * 1.5) * d} reduce={reduce} />
       </Beat>
     </Scene>
+  )
+}
+
+/** A hand-drawn, glowing arrow that sweeps from the title down to the bottom of the screen. */
+function ScrollArrow({ label, delay, reduce }) {
+  const draw = (extra, duration) => ({
+    initial: { pathLength: reduce ? 1 : 0, opacity: 0 },
+    animate: { pathLength: 1, opacity: 1 },
+    transition: {
+      pathLength: { delay: delay + extra, duration: reduce ? 0 : duration, ease: [0.65, 0, 0.35, 1] },
+      opacity: { delay: delay + extra, duration: 0.3 },
+    },
+  })
+  return (
+    <svg className="scroll-arrow-svg" viewBox="0 0 920 1530" preserveAspectRatio="xMidYMid meet" role="img" aria-label={label}>
+      <defs>
+        <linearGradient id="arrowStroke" gradientUnits="userSpaceOnUse" x1="0" y1="290" x2="0" y2="1245">
+          <stop offset="0" stopColor="#f3c6dc" stopOpacity="0.85" />
+          <stop offset="1" stopColor="#ffd9e8" stopOpacity="1" />
+        </linearGradient>
+        <linearGradient id="arrowTail" gradientUnits="userSpaceOnUse" x1="0" y1="1250" x2="0" y2="1530">
+          <stop offset="0" stopColor="#f3c6dc" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#f3c6dc" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="arrowGlow">
+          <stop offset="0" stopColor="#ffb3cf" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#ffb3cf" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <motion.path
+        d="M460 290 C 300 300, 150 520, 125 850 C 112 1020, 128 1150, 152 1240"
+        fill="none"
+        stroke="url(#arrowStroke)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        {...draw(0, 2.2)}
+      />
+      <motion.path
+        d="M127 1188 L152 1242 L168 1184"
+        fill="none"
+        stroke="#ffe3ee"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...draw(2.1, 0.45)}
+      />
+      <motion.path
+        d="M154 1250 C 190 1350, 240 1440, 300 1530"
+        fill="none"
+        stroke="url(#arrowTail)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        {...draw(2.4, 1.2)}
+      />
+      <motion.circle
+        className={reduce ? undefined : 'arrow-glow'}
+        cx="150"
+        cy="1236"
+        r="48"
+        fill="url(#arrowGlow)"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: delay + 2.2, duration: 0.8 }}
+      />
+    </svg>
   )
 }
 
