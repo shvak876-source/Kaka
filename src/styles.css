@@ -121,6 +121,52 @@ body {
   line-height: 1.45;
 }
 
+.scroll-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(20% + 34px);
+  font-size: clamp(0.95rem, 3.8vw, 1.15rem);
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.scroll-hint-float {
+  display: inline-block;
+  animation: hint-float 2.4s ease-in-out infinite;
+}
+
+@keyframes hint-float {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+.photo-ring {
+  width: clamp(170px, 52vw, 280px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  padding: 4px;
+  background: linear-gradient(140deg, rgba(255, 214, 231, 0.9), rgba(214, 58, 110, 0.5));
+  box-shadow: 0 0 40px rgba(255, 140, 185, 0.35);
+}
+
+.photo-ring img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.photo-caption {
+  margin: clamp(22px, 4vh, 36px) 0 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(1.5rem, 6.4vw, 2.6rem);
+  color: var(--ink-soft);
+}
+
 .chapter-title {
   font-family: var(--serif);
   font-weight: 400;

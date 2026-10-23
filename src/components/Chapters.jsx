@@ -8,25 +8,26 @@ const EASE = [0.22, 1, 0.36, 1]
 /* ============ מסך פתיחה ============ */
 export function Opening() {
   const reduce = useReducedMotion()
-  const { lines } = story.opening
+  const c = story.opening
   const sch = schedule.opening
   const d = reduce ? 0.25 : 1
-  const appear = (i) => ({
+  const appear = (delay) => ({
     initial: { opacity: 0, y: reduce ? 0 : 18, filter: reduce ? 'none' : 'blur(12px)' },
     animate: { opacity: 1, y: 0, filter: reduce ? 'none' : 'blur(0px)' },
-    transition: { delay: (0.9 + i * 1.5) * d, duration: reduce ? 0.6 : 1.8, ease: EASE },
+    transition: { delay: delay * d, duration: reduce ? 0.6 : 1.8, ease: EASE },
   })
   return (
     <Scene id="opening" units={sch.U}>
       <Beat out={sch.out} className="layer" lift={40}>
-        <motion.h1 className="opening-name glow-text" {...appear(0)}>
-          {lines[0]}
+        <motion.h1 className="opening-name glow-text" {...appear(0.4)}>
+          {c.greeting}
         </motion.h1>
-        {lines.slice(1).map((l, i) => (
-          <motion.p key={i} className="opening-line" {...appear(i + 1)}>
-            {l}
-          </motion.p>
-        ))}
+        <motion.p className="opening-line" {...appear(1.6)}>
+          {c.line}
+        </motion.p>
+        <motion.div className="scroll-hint" {...appear(3)}>
+          <span className={reduce ? undefined : 'scroll-hint-float'}>{c.scrollHint}</span>
+        </motion.div>
       </Beat>
     </Scene>
   )
@@ -42,13 +43,12 @@ export function Meeting() {
         <Beat range={sch.title} className="title-block">
           <h2 className="chapter-title glow-text">{c.title}</h2>
         </Beat>
-        <div className="paragraphs">
-          {c.paragraphs.map((p, i) => (
-            <Beat key={i} as="p" range={sch.lines[i]} className="story-line" lift={18}>
-              {p}
-            </Beat>
-          ))}
-        </div>
+        <Beat range={sch.photo} className="photo-ring" lift={24}>
+          <img src={`${import.meta.env.BASE_URL}${c.photo}`} alt="" />
+        </Beat>
+        <Beat as="p" range={sch.caption} className="photo-caption" lift={18}>
+          {c.caption}
+        </Beat>
       </Beat>
     </Scene>
   )

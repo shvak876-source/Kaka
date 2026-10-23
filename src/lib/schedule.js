@@ -35,20 +35,17 @@ function openingSchedule() {
 }
 
 function meetingSchedule() {
-  const { paragraphs } = story.meeting
   const s = sequencer().wait(0.15)
   const title = s.take(0.45)
-  s.wait(0.25)
-  const lines = paragraphs.map(() => {
-    const r = s.take(0.4)
-    s.wait(0.18)
-    return r
-  })
-  s.wait(0.6)
+  s.wait(0.15)
+  const photo = s.take(0.5)
+  s.wait(0.15)
+  const caption = s.take(0.45)
+  s.wait(0.7)
   const out = s.take(0.5)
   const U = s.wait(0.1).now
   const n = norm(U)
-  return { U, title: n(title), lines: lines.map(n), out: n(out) }
+  return { U, title: n(title), photo: n(photo), caption: n(caption), out: n(out) }
 }
 
 function conversationsSchedule() {
