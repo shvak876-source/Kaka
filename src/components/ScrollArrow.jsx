@@ -1,6 +1,5 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
-import { motion, useMotionValueEvent, useReducedMotion } from 'framer-motion'
-import { story } from '../data/story'
+import { useMotionValueEvent, useReducedMotion } from 'framer-motion'
 import { ramp, sceneY, useMetrics } from '../lib/layout'
 import { arrowEnd } from '../lib/schedule'
 
@@ -71,7 +70,6 @@ function pointAt(p, y) {
 export function ScrollArrow({ scrollY }) {
   const { metrics } = useMetrics()
   const reduce = useReducedMotion()
-  const delay = (0.9 + story.opening.lines.length * 1.5) * (reduce ? 0.25 : 1)
   const world = useRef(null)
   const line = useRef(null)
   const head = useRef(null)
@@ -102,13 +100,7 @@ export function ScrollArrow({ scrollY }) {
   if (!path) return null
 
   return (
-    <motion.div
-      className="scroll-arrow"
-      aria-hidden="true"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay, duration: 1.4 }}
-    >
+    <div className="scroll-arrow" aria-hidden="true">
       <div ref={fade} className="scroll-arrow-fade">
         <svg width={width} height={vh} viewBox={`0 0 ${width} ${vh}`}>
           <defs>
@@ -145,6 +137,6 @@ export function ScrollArrow({ scrollY }) {
           </g>
         </svg>
       </div>
-    </motion.div>
+    </div>
   )
 }
