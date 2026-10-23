@@ -6,8 +6,8 @@ import { arrowEnd } from '../lib/schedule'
 
 /** Where the arrowhead sits on screen, as a fraction of the screen height. */
 const TIP = 0.8
-/** How tall each half-circle is compared to how wide it is (1 = a true half-circle). */
-const ROUNDNESS = 1.1
+/** How tall each half-ellipse is compared to how wide it is (1 = a half-circle). */
+const ROUNDNESS = 2.4
 const SAMPLES_PER_SWING = 140
 
 /**
