@@ -4,7 +4,7 @@ import { useMood } from './lib/mood'
 import { Background } from './components/Background'
 import { Particles } from './components/Particles'
 import { ScrollArrow } from './components/ScrollArrow'
-import { Conversations, Meeting, Moments, Opening, SomethingChanged, WhatNow } from './components/Chapters'
+import { Announce, Conversations, Meeting, Moments, Night, Opening, SomethingChanged, WhatNow } from './components/Chapters'
 import { Finale } from './components/Finale'
 
 function Experience() {
@@ -18,7 +18,9 @@ function Experience() {
         <Opening />
         <Meeting />
         <Conversations />
+        <Night />
         <Moments />
+        <Announce />
         <SomethingChanged />
         <WhatNow />
         <Finale />

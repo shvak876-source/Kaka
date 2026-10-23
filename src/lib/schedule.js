@@ -31,7 +31,8 @@ const norm = (U) => (r) => r.map((x) => x / U)
 
 function openingSchedule() {
   const U = 0.85
-  return { U, out: norm(U)([0.05, 0.7]) }
+  const n = norm(U)
+  return { U, out: n([0.05, 0.7]), hintOut: n([0, 0.14]) }
 }
 
 function meetingSchedule() {
@@ -48,56 +49,44 @@ function meetingSchedule() {
   return { U, title: n(title), photo: n(photo), caption: n(caption), out: n(out) }
 }
 
-function conversationsSchedule() {
-  const { intro, closing } = story.conversations
-  const s = sequencer().wait(0.15)
-  const title = s.take(0.45)
-  s.wait(0.2)
-  const introLines = intro.map(() => {
-    const r = s.take(0.4)
-    s.wait(0.12)
-    return r
-  })
-  s.wait(0.4)
-  const introOut = s.take(0.35)
-  s.wait(0.15)
-  const closingIn = s.take(closing.wordByWord ? 0.8 : 0.45)
-  s.wait(0.7)
-  const closingOut = s.take(0.4)
+/** A single line that appears on its own, holds, and leaves. */
+function lineSchedule() {
+  const s = sequencer().wait(0.25)
+  const textIn = s.take(0.7)
+  s.wait(0.8)
+  const out = s.take(0.45)
   const U = s.wait(0.1).now
   const n = norm(U)
-  return {
-    U,
-    title: n(title),
-    introLines: introLines.map(n),
-    introOut: n(introOut),
-    closingIn: n(closingIn),
-    closingOut: n(closingOut),
-  }
+  return { U, in: n(textIn), out: n(out) }
+}
+
+function nightSchedule() {
+  const { messages } = story.night
+  const s = sequencer().wait(0.2)
+  const title = s.take(0.45)
+  s.wait(0.25)
+  const bubbles = messages.map(() => {
+    const r = s.take(0.35)
+    s.wait(0.3)
+    return r
+  })
+  s.wait(0.5)
+  const out = s.take(0.5)
+  const U = s.wait(0.1).now
+  const n = norm(U)
+  return { U, title: n(title), bubbles: bubbles.map(n), out: n(out) }
 }
 
 function momentsSchedule() {
-  const { items } = story.moments
-  const s = sequencer().wait(0.15)
-  const titleIn = s.take(0.55)
-  s.wait(0.6)
-  const titleOut = s.take(0.4)
-  s.wait(0.1)
-  const moments = items.map(() => {
-    const inR = s.take(0.5)
-    s.wait(0.75)
-    const outR = s.take(0.4)
-    s.wait(0.1)
-    return { in: inR, out: outR }
-  })
-  const U = s.wait(0.05).now
+  const s = sequencer().wait(0.25)
+  const lead = s.take(0.5)
+  s.wait(0.25)
+  const line = s.take(0.8)
+  s.wait(0.9)
+  const out = s.take(0.5)
+  const U = s.wait(0.1).now
   const n = norm(U)
-  return {
-    U,
-    titleIn: n(titleIn),
-    titleOut: n(titleOut),
-    moments: moments.map((m) => ({ in: n(m.in), out: n(m.out) })),
-  }
+  return { U, lead: n(lead), line: n(line), out: n(out) }
 }
 
 function changedSchedule() {
@@ -149,28 +138,32 @@ function whatNowSchedule() {
 }
 
 function finaleSchedule() {
+  const { paragraphs } = story.invitation
   const s = sequencer().wait(0.25)
   const introIn = s.take(0.5)
-  s.wait(0.6)
-  const introOut = s.take(0.4)
-  s.wait(0.25)
-  const questionIn = s.take(0.8)
-  s.wait(0.05)
-  const buttonsIn = s.take(0.4)
+  s.wait(0.2)
+  const paras = paragraphs.map(() => {
+    const r = s.take(0.5)
+    s.wait(0.15)
+    return r
+  })
+  const buttonIn = s.take(0.35)
   const U = s.wait(0.25).now
   const n = norm(U)
-  return { U, introIn: n(introIn), introOut: n(introOut), questionIn: n(questionIn), buttonsIn: n(buttonsIn) }
+  return { U, introIn: n(introIn), paragraphs: paras.map(n), buttonIn: n(buttonIn) }
 }
 
 export const schedule = {
   opening: openingSchedule(),
   meeting: meetingSchedule(),
-  conversations: conversationsSchedule(),
+  conversations: lineSchedule(),
+  night: nightSchedule(),
   moments: momentsSchedule(),
+  announce: lineSchedule(),
   changed: changedSchedule(),
   whatNow: whatNowSchedule(),
   finale: finaleSchedule(),
 }
 
-/** Where the scroll arrow is completely filled: the moment the invitation appears. */
-export const arrowEnd = ['finale', schedule.finale.questionIn[0]]
+/** Where the scroll arrow bows out: the moment the invitation appears. */
+export const arrowEnd = ['finale', schedule.finale.introIn[1]]

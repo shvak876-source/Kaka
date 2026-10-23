@@ -19,21 +19,34 @@ export function Opening() {
   return (
     <Scene id="opening" units={sch.U}>
       <Beat out={sch.out} className="layer" lift={40}>
-        <motion.h1 className="opening-name glow-text" {...appear(0.4)}>
+        <motion.h1 className="opening-name glow-text" {...appear(0.3)}>
           {c.greeting}
         </motion.h1>
-        <motion.p className="opening-line" {...appear(1.6)}>
+        <motion.p className="opening-line" {...appear(1.4)}>
           {c.line}
         </motion.p>
-        <motion.div className="scroll-hint" {...appear(3)}>
-          <span className={reduce ? undefined : 'scroll-hint-float'}>{c.scrollHint}</span>
-        </motion.div>
+      </Beat>
+
+      {/* hands over to the travelling scroll arrow as soon as she starts scrolling */}
+      <Beat out={sch.hintOut} className="layer" lift={0} blur={0}>
+        <div className="scroll-hint">
+          <motion.span {...appear(2.4)}>{c.scrollHint}</motion.span>
+          <motion.svg
+            className={reduce ? 'scroll-hint-arrow' : 'scroll-hint-arrow scroll-hint-float'}
+            viewBox="-10 -12 20 14"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <path d="M-7 -9 L0 0 L7 -9" fill="none" stroke="#fff0f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </motion.svg>
+        </div>
       </Beat>
     </Scene>
   )
 }
 
-/* ============ פרק ראשון — הרגע שבו הכרנו ============ */
+/* ============ התמונה שממנה הכול התחיל ============ */
 export function Meeting() {
   const c = story.meeting
   const sch = schedule.meeting
@@ -54,60 +67,71 @@ export function Meeting() {
   )
 }
 
-/* ============ פרק שני — השיחות הראשונות ============ */
+/* ============ השיחות ============ */
 export function Conversations() {
-  const c = story.conversations
-  const sch = schedule.conversations
+  return <Line id="conversations" text={story.conversations.text} />
+}
+
+/* ============ לילה אחד ============ */
+export function Night() {
+  const c = story.night
+  const sch = schedule.night
   return (
-    <Scene id="conversations" units={sch.U}>
-      <Beat out={sch.introOut} className="layer" blur={6}>
+    <Scene id="night" units={sch.U}>
+      <Beat out={sch.out} className="layer" lift={30} blur={6}>
         <Beat range={sch.title} className="title-block">
           <h2 className="chapter-title glow-text">{c.title}</h2>
         </Beat>
-        <div className="paragraphs">
-          {c.intro.map((p, i) => (
-            <Beat key={i} as="p" range={sch.introLines[i]} className="story-line" lift={18}>
-              {p}
+        <div className="bubbles">
+          {c.messages.map((m, i) => (
+            <Beat key={i} range={sch.bubbles[i]} className="bubble" lift={16} blur={4}>
+              {m}
             </Beat>
           ))}
         </div>
       </Beat>
+    </Scene>
+  )
+}
 
-      <Beat out={sch.closingOut} className="layer" blur={6}>
-        <p className="statement">
-          {c.closing.wordByWord ? (
-            <Words text={c.closing.text} range={sch.closingIn} />
-          ) : (
-            <Beat as="span" range={sch.closingIn}>
-              {c.closing.text}
-            </Beat>
-          )}
+/* ============ חלק מהיום שלי ============ */
+export function Moments() {
+  const c = story.moments
+  const sch = schedule.moments
+  return (
+    <Scene id="moments" units={sch.U}>
+      <Beat out={sch.out} className="layer" blur={6}>
+        <Beat as="p" range={sch.lead} className="whisper" lift={18}>
+          {c.lead}
+        </Beat>
+        <p className="statement statement-after">
+          <Words text={c.line} range={sch.line} />
         </p>
       </Beat>
     </Scene>
   )
 }
 
-/* ============ פרק שלישי — הרגעים הקטנים ============ */
-export function Moments() {
-  const c = story.moments
-  const sch = schedule.moments
-  return (
-    <Scene id="moments" units={sch.U}>
-      <Beat range={sch.titleIn} out={sch.titleOut} className="layer">
-        <h2 className="chapter-title chapter-title-long glow-text">{c.title}</h2>
-      </Beat>
+/* ============ לקראת ההמשך ============ */
+export function Announce() {
+  return <Line id="announce" text={story.announce.text} />
+}
 
-      {c.items.map((text, i) => (
-        <Beat key={i} range={sch.moments[i].in} out={sch.moments[i].out} className="layer" lift={34}>
-          <p className="statement">{text}</p>
-        </Beat>
-      ))}
+/** A scene holding one sentence alone in the middle of the screen. */
+function Line({ id, text }) {
+  const sch = schedule[id]
+  return (
+    <Scene id={id} units={sch.U}>
+      <Beat out={sch.out} className="layer" blur={6}>
+        <p className="statement">
+          <Words text={text} range={sch.in} />
+        </p>
+      </Beat>
     </Scene>
   )
 }
 
-/* ============ פרק רביעי — משהו השתנה ============ */
+/* ============ ההבנה ============ */
 export function SomethingChanged() {
   const c = story.somethingChanged
   const sch = schedule.changed
@@ -115,7 +139,7 @@ export function SomethingChanged() {
     <Scene id="changed" units={sch.U}>
       {c.lines.map((l, i) => (
         <Beat key={i} range={sch.lines[i].in} out={sch.lines[i].out} className="layer">
-          <p className={i === 0 ? 'whisper' : 'statement'}>{l}</p>
+          <p className="statement">{l}</p>
         </Beat>
       ))}
       <Beat out={sch.highlightOut} className="layer" blur={6}>
@@ -135,7 +159,7 @@ function HighlightGlow({ range }) {
   return <motion.div className="highlight-glow" style={{ opacity, scale }} aria-hidden="true" />
 }
 
-/* ============ פרק חמישי — ומה עכשיו? ============ */
+/* ============ לקראת ההזמנה ============ */
 export function WhatNow() {
   const c = story.whatNow
   const sch = schedule.whatNow

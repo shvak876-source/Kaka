@@ -64,7 +64,7 @@ function pointAt(p, y) {
 }
 
 /**
- * The page's scroll indicator: a glowing arrow that travels down the page in half-circles
+ * The page's scroll indicator: a glowing arrow that travels down the page in half-ellipses
  * as she scrolls, drawing its path behind it, and bows out when the invitation appears.
  */
 export function ScrollArrow({ scrollY }) {
@@ -91,7 +91,8 @@ export function ScrollArrow({ scrollY }) {
     world.current.setAttribute('transform', `translate(0 ${-sy})`)
     line.current.setAttribute('stroke-dasharray', `${p.len} ${path.total + vh}`)
     head.current.setAttribute('transform', `translate(${p.x} ${p.y - sy}) rotate(${(p.angle * 180) / Math.PI - 90})`)
-    fade.current.style.opacity = String(1 - ramp(sy, finishY - vh * 0.6, finishY))
+    // the opening's own hint arrow hands over to this one as she starts scrolling
+    fade.current.style.opacity = String(ramp(sy, vh * 0.04, vh * 0.16) * (1 - ramp(sy, finishY - vh * 0.6, finishY)))
   }
 
   useMotionValueEvent(scrollY, 'change', update)
