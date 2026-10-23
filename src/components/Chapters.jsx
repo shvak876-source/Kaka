@@ -28,7 +28,7 @@ export function Opening() {
       </Beat>
 
       {/* hands over to the travelling scroll arrow as soon as she starts scrolling */}
-      <Beat out={sch.hintOut} className="layer" lift={0} blur={0}>
+      <Beat out={sch.hintOut} className="layer" lift={0}>
         <div className="scroll-hint">
           <motion.span {...appear(2.4)}>{c.scrollHint}</motion.span>
           <motion.svg
@@ -52,7 +52,7 @@ export function Meeting() {
   const sch = schedule.meeting
   return (
     <Scene id="meeting" units={sch.U}>
-      <Beat out={sch.out} className="layer" lift={30} blur={6}>
+      <Beat out={sch.out} className="layer" lift={30}>
         <Beat range={sch.title} className="title-block">
           <h2 className="chapter-title glow-text">{c.title}</h2>
         </Beat>
@@ -78,13 +78,13 @@ export function Night() {
   const sch = schedule.night
   return (
     <Scene id="night" units={sch.U}>
-      <Beat out={sch.out} className="layer" lift={30} blur={6}>
+      <Beat out={sch.out} className="layer" lift={30}>
         <Beat range={sch.title} className="title-block">
           <h2 className="chapter-title glow-text">{c.title}</h2>
         </Beat>
         <div className="bubbles">
           {c.messages.map((m, i) => (
-            <Beat key={i} range={sch.bubbles[i]} className="bubble" lift={16} blur={4}>
+            <Beat key={i} range={sch.bubbles[i]} className="bubble" lift={16}>
               {m}
             </Beat>
           ))}
@@ -100,7 +100,7 @@ export function Moments() {
   const sch = schedule.moments
   return (
     <Scene id="moments" units={sch.U}>
-      <Beat out={sch.out} className="layer" blur={6}>
+      <Beat out={sch.out} className="layer">
         <Beat as="p" range={sch.lead} className="whisper" lift={18}>
           {c.lead}
         </Beat>
@@ -122,7 +122,7 @@ function Line({ id, text }) {
   const sch = schedule[id]
   return (
     <Scene id={id} units={sch.U}>
-      <Beat out={sch.out} className="layer" blur={6}>
+      <Beat out={sch.out} className="layer">
         <p className="statement">
           <Words text={text} range={sch.in} />
         </p>
@@ -142,7 +142,7 @@ export function SomethingChanged() {
           <p className="statement">{l}</p>
         </Beat>
       ))}
-      <Beat out={sch.highlightOut} className="layer" blur={6}>
+      <Beat out={sch.highlightOut} className="layer">
         <HighlightGlow range={sch.highlightIn} />
         <p className="statement statement-highlight">
           <Words text={c.highlight} range={sch.highlightIn} />
@@ -170,7 +170,7 @@ export function WhatNow() {
           <p className="statement">{l}</p>
         </Beat>
       ))}
-      <Beat out={sch.questionOut} className="layer" blur={6}>
+      <Beat out={sch.questionOut} className="layer">
         <p className="statement statement-question">
           <Words text={c.question} range={sch.questionIn} />
         </p>

@@ -29,9 +29,10 @@ export function Scene({ id, units, className = '', children }) {
 
 /**
  * Fades + lifts in over range[0..1], and (optionally) out over range[2..3],
- * tied directly to the scene's scroll progress.
+ * tied directly to the scene's scroll progress. No blur: animating a filter on
+ * every scroll frame is what makes phones stutter.
  */
-export function Beat({ range, out, as = 'div', className, style, lift = 26, blur = 8, children, ...rest }) {
+export function Beat({ range, out, as = 'div', className, style, lift = 26, children, ...rest }) {
   const progress = useSceneProgress()
   const reduce = useReducedMotion()
   const [a, b] = range ?? [-2, -1]
@@ -39,15 +40,10 @@ export function Beat({ range, out, as = 'div', className, style, lift = 26, blur
   const input = [a, b, c, d]
   const opacity = useTransform(progress, input, [0, 1, 1, 0])
   const y = useTransform(progress, input, reduce ? [0, 0, 0, 0] : [lift, 0, 0, -lift])
-  const filter = useTransform(
-    progress,
-    input,
-    reduce || !blur ? ['none', 'none', 'none', 'none'] : [`blur(${blur}px)`, 'blur(0px)', 'blur(0px)', `blur(${blur * 0.75}px)`]
-  )
   const visibility = useTransform(opacity, (o) => (o < 0.002 ? 'hidden' : 'visible'))
   const Comp = motion[as]
   return (
-    <Comp className={className} style={{ ...style, opacity, y, filter, visibility }} {...rest}>
+    <Comp className={className} style={{ ...style, opacity, y, visibility }} {...rest}>
       {children}
     </Comp>
   )
@@ -80,9 +76,8 @@ function Word({ range, children }) {
   const reduce = useReducedMotion()
   const opacity = useTransform(progress, range, [0, 1])
   const y = useTransform(progress, range, reduce ? [0, 0] : [14, 0])
-  const filter = useTransform(progress, range, reduce ? ['none', 'none'] : ['blur(6px)', 'blur(0px)'])
   return (
-    <motion.span className="word" style={{ opacity, y, filter }}>
+    <motion.span className="word" style={{ opacity, y }}>
       {children}
     </motion.span>
   )

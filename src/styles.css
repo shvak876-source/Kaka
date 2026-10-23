@@ -194,10 +194,8 @@ body {
   padding: 11px 16px;
   border-radius: 20px;
   border-start-start-radius: 6px;
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(40, 18, 34, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25), 0 0 26px rgba(255, 122, 168, 0.12);
   font-size: clamp(1.05rem, 4.4vw, 1.25rem);
   line-height: 1.45;
@@ -300,7 +298,7 @@ body {
   overflow: visible;
 }
 
-.arrow-line {
+.arrow-head {
   filter: drop-shadow(0 0 4px rgba(255, 170, 205, 0.5));
 }
 
@@ -371,9 +369,8 @@ body {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(8, 3, 8, 0.72);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  /* no backdrop blur: the particles keep moving underneath, so it would be re-blurred every frame */
+  background: rgba(8, 3, 8, 0.86);
 }
 
 .rsvp-scroll {
@@ -762,7 +759,7 @@ body {
 .bg-glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
+  /* the gradients fade out on their own; a blur filter on shapes this big costs far too much */
   will-change: transform;
 }
 
@@ -771,7 +768,7 @@ body {
   height: 90vmax;
   top: -35vmax;
   right: -30vmax;
-  background: radial-gradient(circle, rgba(138, 77, 255, 0.22), transparent 62%);
+  background: radial-gradient(circle, rgba(138, 77, 255, 0.2), rgba(138, 77, 255, 0.08) 38%, transparent 66%);
 }
 
 .bg-glow.g2 {
@@ -779,7 +776,7 @@ body {
   height: 80vmax;
   bottom: -40vmax;
   left: -30vmax;
-  background: radial-gradient(circle, rgba(214, 58, 110, 0.2), transparent 62%);
+  background: radial-gradient(circle, rgba(214, 58, 110, 0.18), rgba(214, 58, 110, 0.07) 38%, transparent 66%);
 }
 
 .bg-glow.g3 {
@@ -787,7 +784,7 @@ body {
   height: 60vmax;
   top: 30%;
   left: 20%;
-  background: radial-gradient(circle, rgba(122, 15, 46, 0.22), transparent 64%);
+  background: radial-gradient(circle, rgba(122, 15, 46, 0.2), rgba(122, 15, 46, 0.08) 40%, transparent 68%);
 }
 
 .bg-warm,
@@ -838,9 +835,6 @@ body {
   .scroll-hint-float,
   .btn-primary {
     animation: none;
-  }
-  .bg-glow {
-    filter: blur(40px);
   }
 }
 

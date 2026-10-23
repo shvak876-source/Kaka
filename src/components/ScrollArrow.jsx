@@ -119,7 +119,7 @@ export function ScrollArrow({ scrollY }) {
               <stop offset="1" stopColor="#ffb3cf" stopOpacity="0" />
             </radialGradient>
           </defs>
-          <g mask="url(#trailMask)" className="arrow-line">
+          <g mask="url(#trailMask)">
             <g ref={world}>
               <path ref={line} d={path.d} fill="none" stroke="#ffd6e7" strokeWidth="1.5" strokeLinecap="round" strokeDasharray={`0 ${path.total + vh}`} />
             </g>
@@ -127,7 +127,7 @@ export function ScrollArrow({ scrollY }) {
           <g ref={head}>
             <circle className={reduce ? undefined : 'arrow-glow'} r="18" fill="url(#arrowGlow)" />
             <path
-              className="arrow-line"
+              className="arrow-head"
               d="M-7 -9 L0 0 L7 -9"
               fill="none"
               stroke="#fff0f6"

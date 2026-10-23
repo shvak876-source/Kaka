@@ -24,7 +24,7 @@ export function Finale() {
             </Beat>
           ))}
         </div>
-        <Beat range={sch.buttonIn} className="ask-actions" lift={16} blur={0}>
+        <Beat range={sch.buttonIn} className="ask-actions" lift={16}>
           <button className="btn btn-primary btn-rsvp" onClick={() => setOpen(true)}>
             {c.rsvpButton}
           </button>
