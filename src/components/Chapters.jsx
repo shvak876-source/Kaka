@@ -1,4 +1,5 @@
-import { motion, useReducedMotion, useTransform } from 'framer-motion'
+import { useState } from 'react'
+import { motion, useMotionValueEvent, useReducedMotion, useTransform } from 'framer-motion'
 import { story } from '../data/story'
 import { schedule } from '../lib/schedule'
 import { Beat, Scene, useSceneProgress, Words } from './Scene'
@@ -58,12 +59,31 @@ export function Meeting() {
         </Beat>
         <Beat range={sch.photo} className="photo-ring" lift={24}>
           <img src={`${import.meta.env.BASE_URL}${c.photo}`} alt="" />
+          <LightRing range={sch.ring} />
         </Beat>
         <Beat as="p" range={sch.caption} className="photo-caption" lift={18}>
           {c.caption}
         </Beat>
       </Beat>
     </Scene>
+  )
+}
+
+/** A ring of light that closes around the photo, then keeps beating softly like a pulse. */
+function LightRing({ range }) {
+  const progress = useSceneProgress()
+  const pathLength = useTransform(progress, range, [0, 1])
+  const opacity = useTransform(progress, [range[0], range[0] + 0.02], [0, 1])
+  const [closed, setClosed] = useState(false)
+  useMotionValueEvent(progress, 'change', (p) => setClosed(p >= range[1]))
+  return (
+    <>
+      <svg className="photo-light" viewBox="0 0 100 100" aria-hidden="true">
+        {/* starts at the top and closes clockwise */}
+        <motion.circle cx="50" cy="50" r="48" style={{ pathLength, opacity }} transform="rotate(-90 50 50)" />
+      </svg>
+      <span className={closed ? 'photo-pulse on' : 'photo-pulse'} aria-hidden="true" />
+    </>
   )
 }
 

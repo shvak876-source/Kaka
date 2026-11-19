@@ -6,6 +6,7 @@ import { bump, ramp, useMetrics } from './layout'
  *  warm   – rosy/red glow during chapter 4
  *  dark   – the screen dims from chapter 5 onwards
  *  finale – soft light fills the final scene
+ *  journey – 0 at the top of the page, 1 when the invitation arrives: the colour runs from cool night to warm gold
  */
 export function useMood() {
   const { scrollY } = useScroll()
@@ -29,5 +30,11 @@ export function useMood() {
     return ramp(y, s.finale.S - vh * 0.4, s.finale.S + (s.finale.E - s.finale.S) * 0.65)
   })
 
-  return { scrollY, warm, dark, finale }
+  const journey = useTransform(scrollY, (y) => {
+    const { scenes: s } = metricsRef.current
+    if (!s.finale) return 0
+    return ramp(y, 0, s.finale.S)
+  })
+
+  return { scrollY, warm, dark, finale, journey }
 }

@@ -40,13 +40,14 @@ function meetingSchedule() {
   const title = s.take(0.45)
   s.wait(0.15)
   const photo = s.take(0.5)
-  s.wait(0.15)
+  const ring = s.take(0.45)
+  s.wait(0.1)
   const caption = s.take(0.45)
   s.wait(0.7)
   const out = s.take(0.5)
   const U = s.wait(0.1).now
   const n = norm(U)
-  return { U, title: n(title), photo: n(photo), caption: n(caption), out: n(out) }
+  return { U, title: n(title), photo: n(photo), ring: n(ring), caption: n(caption), out: n(out) }
 }
 
 /** A single line that appears on its own, holds, and leaves. */
@@ -147,10 +148,12 @@ function finaleSchedule() {
     s.wait(0.15)
     return r
   })
-  const buttonIn = s.take(0.35)
+  const heart = s.take(0.8)
+  // the button arrives as the heart closes around it
+  const buttonIn = s.at(heart[1] - 0.3).take(0.35)
   const U = s.wait(0.25).now
   const n = norm(U)
-  return { U, introIn: n(introIn), paragraphs: paras.map(n), buttonIn: n(buttonIn) }
+  return { U, introIn: n(introIn), paragraphs: paras.map(n), heart: n(heart), buttonIn: n(buttonIn) }
 }
 
 export const schedule = {

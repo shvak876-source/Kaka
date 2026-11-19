@@ -271,12 +271,33 @@ function Burst() {
       rising: true,
       hue: i % 3,
     }))
-    return [...burst, ...rising]
+    // lanterns: fewer, bigger, slower, swaying as they climb
+    const lanterns = Array.from({ length: reduce ? 0 : 14 }, (_, i) => ({
+      id: `l${i}`,
+      lantern: true,
+      left: rand(3, 92),
+      size: rand(14, 30),
+      delay: 0.6 + i * 0.45 + rand(0, 0.6),
+      dur: rand(11, 17),
+      sway: rand(14, 34) * (i % 2 ? 1 : -1),
+    }))
+    return [...burst, ...rising, ...lanterns]
   }, [reduce])
 
   return (
     <div className="hearts" aria-hidden="true">
       {items.map((h) => {
+        if (h.lantern)
+          return (
+            <motion.span
+              key={h.id}
+              className="lantern"
+              style={{ width: h.size, height: h.size * 1.25, left: `${h.left}%` }}
+              initial={{ y: 0, x: 0, opacity: 0 }}
+              animate={{ y: '-125vh', x: [0, h.sway, -h.sway * 0.6, h.sway * 0.4], opacity: [0, 0.95, 0.9, 0] }}
+              transition={{ duration: h.dur, delay: h.delay, repeat: Infinity, ease: 'linear', repeatDelay: 1 }}
+            />
+          )
         const cls = h.kind === 'spark' ? 'spark' : `heart heart-h${h.hue}`
         const Icon = h.kind === 'spark' ? SparkIcon : HeartIcon
         return h.rising ? (
