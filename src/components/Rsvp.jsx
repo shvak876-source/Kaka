@@ -108,7 +108,6 @@ export function RsvpDocument({ onClose }) {
               transition={{ duration: 0.8, ease: EASE }}
             >
               <p className="rsvp-success-title">{c.successTitle}</p>
-              <p className="rsvp-success-text">{c.successText}</p>
               <WhatsApp name={name} />
             </motion.div>
           ) : (
