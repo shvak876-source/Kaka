@@ -11,7 +11,9 @@
   --rose-deep: #d63a6e;
   --plum: #8a4dff;
   --wine: #7a0f2e;
-  --glow: 0 0 18px rgba(255, 122, 168, 0.55), 0 0 42px rgba(214, 58, 110, 0.35);
+  /* three layers at most: a bigger blur on large text is what costs frames on phones */
+  --glow: 0 0 3px rgba(255, 236, 244, 0.6), 0 0 14px rgba(255, 122, 168, 0.75), 0 0 38px rgba(214, 58, 110, 0.45);
+  --glow-soft: 0 0 12px rgba(255, 150, 190, 0.45);
   --serif: 'Frank Ruhl Libre', 'David Libre', 'Times New Roman', serif;
   --sans: 'Heebo', 'Assistant', system-ui, -apple-system, sans-serif;
   --gutter: clamp(44px, 9vw, 120px);
@@ -178,6 +180,13 @@ body {
   pointer-events: none;
 }
 
+.photo-light .ring-glow {
+  stroke: #ff9cc2;
+  stroke-width: 5;
+  stroke-opacity: 0.25;
+  filter: none;
+}
+
 .photo-light circle {
   fill: none;
   stroke: #ffe3ee;
@@ -284,6 +293,7 @@ body {
 }
 
 .statement {
+  text-shadow: var(--glow-soft);
   font-family: var(--serif);
   font-weight: 400;
   font-size: clamp(1.75rem, 7.4vw, 3.4rem);
@@ -451,6 +461,12 @@ body {
   height: 100%;
   overflow: visible;
   pointer-events: none;
+}
+
+.heart-line .heart-glow {
+  stroke: #ff8fb8;
+  stroke-width: 7;
+  stroke-opacity: 0.22;
 }
 
 .heart-line path {
@@ -772,11 +788,36 @@ body {
 }
 
 .btn-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   border: 0;
   color: #fff;
   background: linear-gradient(135deg, #ff7aa8 0%, #e0457a 50%, #a8244f 100%);
   box-shadow: 0 10px 34px rgba(224, 69, 122, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
   animation: btn-breathe 3s ease-in-out infinite;
+}
+
+/* a band of light sweeps across now and then; transform only */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 45%;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: translateX(-140%) skewX(-18deg);
+  animation: btn-shine 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.btn-primary:disabled::after {
+  display: none;
+}
+
+@keyframes btn-shine {
+  0%, 55% { transform: translateX(-140%) skewX(-18deg); }
+  100% { transform: translateX(340%) skewX(-18deg); }
 }
 
 @keyframes btn-breathe {
@@ -1200,7 +1241,8 @@ body {
   .photo-pulse.on,
   .glitching .survey,
   .glitching::after,
-  .btn-primary {
+  .btn-primary,
+  .btn-primary::after {
     animation: none;
   }
 }

@@ -80,6 +80,7 @@ function LightRing({ range }) {
     <>
       <svg className="photo-light" viewBox="0 0 100 100" aria-hidden="true">
         {/* starts at the top and closes clockwise */}
+        <motion.circle className="ring-glow" cx="50" cy="50" r="48" style={{ pathLength, opacity }} transform="rotate(-90 50 50)" />
         <motion.circle cx="50" cy="50" r="48" style={{ pathLength, opacity }} transform="rotate(-90 50 50)" />
       </svg>
       <span className={closed ? 'photo-pulse on' : 'photo-pulse'} aria-hidden="true" />

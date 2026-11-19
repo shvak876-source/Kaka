@@ -18,6 +18,31 @@ function makeSprite(rgb) {
   return c
 }
 
+/** A four-pointed glint: a bright core with thin rays of light. */
+function makeGlint(rgb) {
+  const size = 96
+  const m = size / 2
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const g = c.getContext('2d')
+  const core = g.createRadialGradient(m, m, 0, m, m, m * 0.5)
+  core.addColorStop(0, 'rgba(255,255,255,1)')
+  core.addColorStop(0.15, `rgba(${rgb},0.8)`)
+  core.addColorStop(1, `rgba(${rgb},0)`)
+  g.fillStyle = core
+  g.fillRect(0, 0, size, size)
+  g.globalCompositeOperation = 'lighter'
+  for (const [w, h] of [[m, 1.4], [1.4, m]]) {
+    const ray = g.createRadialGradient(m, m, 0, m, m, m)
+    ray.addColorStop(0, 'rgba(255,255,255,0.95)')
+    ray.addColorStop(0.5, `rgba(${rgb},0.35)`)
+    ray.addColorStop(1, `rgba(${rgb},0)`)
+    g.fillStyle = ray
+    g.fillRect(m - w, m - h, w * 2, h * 2)
+  }
+  return c
+}
+
 /**
  * Small drifting motes of light on a canvas. `intensity` (MotionValue, 0..1)
  * brings in extra particles; `scrollY` adds a depth-based parallax.
@@ -30,6 +55,7 @@ export function Particles({ scrollY, intensity }) {
     const canvas = ref.current
     const ctx = canvas.getContext('2d')
     const sprites = COLORS.map(makeSprite)
+    const glintSprites = ['255,236,200', '255,190,215', '255,255,255'].map(makeGlint)
     let w = 0
     let h = 0
     let dpr = 1
@@ -52,6 +78,17 @@ export function Particles({ scrollY, intensity }) {
       ph: rand(0, Math.PI * 2),
       a: rand(0.25, 0.85),
       s: i % COLORS.length,
+    }))
+
+    // glints sit still and flash briefly, each on its own slow rhythm
+    const glints = Array.from({ length: small ? 10 : 18 }, (_, i) => ({
+      x: Math.random(),
+      y: Math.random(),
+      size: rand(14, 30),
+      depth: rand(0.2, 1),
+      speed: rand(0.18, 0.4),
+      ph: rand(0, Math.PI * 2),
+      s: i % 3,
     }))
 
     const resize = () => {
@@ -92,6 +129,16 @@ export function Particles({ scrollY, intensity }) {
         const size = p.r * (0.6 + p.depth * 0.6)
         ctx.globalAlpha = alpha
         ctx.drawImage(sprites[p.s], p.x * w - size / 2, py - size / 2, size, size)
+      }
+      for (const gl of glints) {
+        // sin^8 keeps it dark most of the time and gives a quick, sharp flash
+        const f = reduce ? 0.3 : Math.max(0, Math.sin(t * gl.speed + gl.ph)) ** 8
+        if (f < 0.02) continue
+        let gy = (gl.y * h - sy * 0.12 * gl.depth) % h
+        if (gy < 0) gy += h
+        const size = gl.size * (0.5 + f * 0.7) * (1 + boost * 0.3)
+        ctx.globalAlpha = Math.min(1, f * (0.75 + boost * 0.25))
+        ctx.drawImage(glintSprites[gl.s], gl.x * w - size / 2, gy - size / 2, size, size)
       }
       ctx.globalAlpha = 1
       if (running && !reduce) raf = requestAnimationFrame(draw)

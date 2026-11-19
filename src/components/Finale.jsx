@@ -104,6 +104,7 @@ function HeartLine({ range }) {
           <stop offset="1" stopColor="#ffb3cf" stopOpacity="0" />
         </radialGradient>
       </defs>
+      <motion.path className="heart-glow" d={HEART} style={{ pathLength: drawn, opacity }} />
       <motion.path ref={path} d={HEART} style={{ pathLength: drawn, opacity }} />
       <motion.g ref={tip} style={{ opacity: tipOpacity }}>
         <circle r="10" fill="url(#heartTipGlow)" />

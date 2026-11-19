@@ -72,6 +72,7 @@ export function ScrollArrow({ scrollY }) {
   const reduce = useReducedMotion()
   const world = useRef(null)
   const line = useRef(null)
+  const halo = useRef(null)
   const head = useRef(null)
   const fade = useRef(null)
 
@@ -89,7 +90,9 @@ export function ScrollArrow({ scrollY }) {
     if (!path || !world.current) return
     const p = pointAt(path, sy + vh * TIP)
     world.current.setAttribute('transform', `translate(0 ${-sy})`)
-    line.current.setAttribute('stroke-dasharray', `${p.len} ${path.total + vh}`)
+    const dash = `${p.len} ${path.total + vh}`
+    line.current.setAttribute('stroke-dasharray', dash)
+    halo.current.setAttribute('stroke-dasharray', dash)
     head.current.setAttribute('transform', `translate(${p.x} ${p.y - sy}) rotate(${(p.angle * 180) / Math.PI - 90})`)
     // the opening's own hint arrow hands over to this one as she starts scrolling
     fade.current.style.opacity = String(ramp(sy, vh * 0.04, vh * 0.16) * (1 - ramp(sy, finishY - vh * 0.6, finishY)))
@@ -121,6 +124,8 @@ export function ScrollArrow({ scrollY }) {
           </defs>
           <g mask="url(#trailMask)">
             <g ref={world}>
+              {/* a wide faint stroke under the line reads as glow, without a filter */}
+              <path ref={halo} d={path.d} fill="none" stroke="#ff9cc2" strokeOpacity="0.2" strokeWidth="6" strokeLinecap="round" strokeDasharray={`0 ${path.total + vh}`} />
               <path ref={line} d={path.d} fill="none" stroke="#ffd6e7" strokeWidth="1.5" strokeLinecap="round" strokeDasharray={`0 ${path.total + vh}`} />
             </g>
           </g>
