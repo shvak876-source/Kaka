@@ -5,7 +5,7 @@ import { story } from '../data/story'
 const EASE = [0.22, 1, 0.36, 1]
 
 /**
- * The story starts dressed up as a dull grey satisfaction survey. With every answer a little
+ * The story starts dressed up as a plain, innocent little questionnaire. With every answer a little
  * more colour leaks in; on "send" it glitches, splits down the middle and the story opens behind it.
  * `onOpen` fires as the split starts (so the story mounts and plays its intro as it is revealed),
  * `onDone` once the disguise is completely gone.
